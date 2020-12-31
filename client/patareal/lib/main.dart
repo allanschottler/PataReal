@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:universal_io/io.dart';
+import 'dart:async';
+import 'dart:convert';
 
 void main() => runApp(MyApp());
 
@@ -32,6 +34,7 @@ class BodyWidget extends StatefulWidget {
 
 class BodyWidgetState extends State<BodyWidget> {
   String serverResponse = 'Server response';
+  final petNameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -44,12 +47,22 @@ class BodyWidgetState extends State<BodyWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
+              TextFormField(controller: petNameController),
               RaisedButton(
-                child: Text('Send request to server'),
-                onPressed: () {
-                  _makeGetRequest();
-                },
-              ),
+                  child: Text('Hello?'),
+                  onPressed: () {
+                    getHello();
+                  }),
+              RaisedButton(
+                  child: Text('Find pet'),
+                  onPressed: () {
+                    findPet();
+                  }),
+              RaisedButton(
+                  child: Text('Add pet'),
+                  onPressed: () {
+                    addPet();
+                  }),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(serverResponse),
@@ -61,10 +74,43 @@ class BodyWidgetState extends State<BodyWidget> {
     );
   }
 
-  _makeGetRequest() async {
+  getHello() async {
     Response response = await get(_localhost());
     setState(() {
       serverResponse = response.body;
+    });
+  }
+
+  findPet() async {
+    Response response = await post(_localhost() + '/findpet',
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        },
+        body: jsonEncode(<String, String>{
+          'name': petNameController.text,
+        }));
+    setState(() {
+      var res = jsonDecode(response.body);
+      if (res['success'] == true) {
+        List<String> pets = res['msg'].cast<String>();
+        serverResponse = pets.reduce((a, b) => a + '\n' + b);
+      } else {
+        serverResponse = res['msg'];
+      }
+    });
+  }
+
+  addPet() async {
+    Response response = await post(_localhost() + '/addpet',
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        },
+        body: jsonEncode(<String, String>{
+          'name': petNameController.text,
+        }));
+    setState(() {
+      var res = jsonDecode(response.body);
+      serverResponse = res['msg'];
     });
   }
 
