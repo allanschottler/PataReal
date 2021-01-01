@@ -1,12 +1,14 @@
 const express = require('express');
-const createError = require('http-errors');
+const session = require('express-session')
+const createError = require('http-errors')
 const cors = require('cors')
 const logger = require('morgan');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser')
+//const cookieParser = require('cookie-parser');
 const path = require('path');
 const connectDB = require('./config/db')
-const indexRouter = require('./routes/index');
+const passport = require('./config/passport')
+const indexRouter = require('./routes/index')
 
 const hostname = 'localhost';
 const port = 3000;
@@ -19,7 +21,12 @@ connectDB(function(db) {
   app.use(express.urlencoded({ extended: false }));
   app.use(bodyParser.json('application/json'));
   app.use(express.static(path.join(__dirname, 'public')));
-  app.use(cookieParser());
+  app.use(session({ secret: 'secret', cookie: { maxAge: 60000, secure: false }, resave: false, saveUninitialized: false }));
+  // Init passport authentication 
+  app.use(passport.initialize());
+  // persistent login sessions 
+  //app.use(passport.session());
+  //app.use(cookieParser());
 
   app.use('/', indexRouter);
 

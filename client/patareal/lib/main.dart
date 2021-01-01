@@ -34,6 +34,8 @@ class BodyWidget extends StatefulWidget {
 
 class BodyWidgetState extends State<BodyWidget> {
   String serverResponse = 'Server response';
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
   final petNameController = TextEditingController();
 
   @override
@@ -47,11 +49,26 @@ class BodyWidgetState extends State<BodyWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
+              Text('email'),
+              TextFormField(controller: emailController),
+              Text('password'),
+              TextFormField(controller: passwordController),
+              Text('pet name'),
               TextFormField(controller: petNameController),
               RaisedButton(
                   child: Text('Hello?'),
                   onPressed: () {
                     getHello();
+                  }),
+              RaisedButton(
+                  child: Text('Register'),
+                  onPressed: () {
+                    registerUser();
+                  }),
+              RaisedButton(
+                  child: Text('Login'),
+                  onPressed: () {
+                    login();
                   }),
               RaisedButton(
                   child: Text('Find pet'),
@@ -72,6 +89,37 @@ class BodyWidgetState extends State<BodyWidget> {
         ),
       ),
     );
+  }
+
+  registerUser() async {
+    Response response = await post(_localhost() + '/register',
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        },
+        body: jsonEncode(<String, String>{
+          'email': emailController.text,
+          'password': passwordController.text,
+        }));
+    setState(() {
+      var res = jsonDecode(response.body);
+      serverResponse = res['msg'];
+    });
+  }
+
+  login() async {
+    Response response = await post(_localhost() + '/login',
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        },
+        body: jsonEncode(<String, String>{
+          'email': emailController.text,
+          'password': passwordController.text,
+        }));
+    setState(() {
+      var res = jsonDecode(response.body);
+      serverResponse = res['msg'];
+      //Redirect (pop)
+    });
   }
 
   getHello() async {
