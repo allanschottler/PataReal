@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:universal_io/io.dart';
-import 'dart:async';
+//import 'dart:async';
 import 'dart:convert';
 
 void main() => runApp(MyApp());
@@ -37,6 +37,7 @@ class BodyWidgetState extends State<BodyWidget> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final petNameController = TextEditingController();
+  String _jwt = '';
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +119,10 @@ class BodyWidgetState extends State<BodyWidget> {
     setState(() {
       var res = jsonDecode(response.body);
       serverResponse = res['msg'];
+      var jwt = res['user']['token'];
+      //if (jwt) {
+      _jwt = jwt;
+      //}
       //Redirect (pop)
     });
   }
@@ -151,7 +156,8 @@ class BodyWidgetState extends State<BodyWidget> {
   addPet() async {
     Response response = await post(_localhost() + '/addpet',
         headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8'
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': ('Token ' + _jwt)
         },
         body: jsonEncode(<String, String>{
           'name': petNameController.text,
